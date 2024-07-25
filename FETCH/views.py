@@ -1,15 +1,29 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
 import requests
+from rest_framework.response import Response 
+
+# Importing models 
 from .models import State
+from .models import Subdistrict
+from .models import Village
 from .models import District
 
+
+# Importing serializers 
+from .serializers import VillageSerializer
+from .serializers import StateSerializer
+from .serializers import DistrictSerializer
+
+# from rest_framework import response
 # Create your views here.
 
+#for .env file
+from decouple import config
 
 def createstate(request):
     count=0
-    stateData = requests.post('https://lgdirectory.gov.in/webservices/lgdws/stateList').json()
+    stateData = requests.post(config('state_api')).json()
     for i in stateData:
         #print(i)     # For checking 
         state_code=i['stateCode']
@@ -36,7 +50,9 @@ def createdistrict(request):
         #print(id_)      #for checking 
 
         # Fetching the data from API
-        query='https://lgdirectory.gov.in/webservices/lgdws/districtList?stateCode='+str(id_)
+        # query='https://lgdirectory.gov.in/webservices/lgdws/districtList?stateCode='+str(id_)
+        # query=f'https://lgdirectory.gov.in/webservices/lgdws/districtList?stateCode={id_}'
+        query=config('district_api_link')+str(id_)
         district_data = requests.post(query).json()
 
         #creating the state instance for passing as foreign key
@@ -71,38 +87,117 @@ def createdistrict(request):
 we are going to add
 """
 
-districtData=Diatricts.objects.all()
+def createsubdistrict(request):
+    sdcount = 0
+    state_ids = [23, 27, 9, 8]
 
-    for i in districtData:
-        id=i.districtCode
-        print(id)
-        query='https://lgdirectory.gov.in/webservices/lgdws/subdistrictList?districtCode='+str(id)
-        talukaData= requests.post(query).json()
+    for id_ in state_ids:
+        # Retrieve all districts for the current state id
+        districts = District.objects.filter(state=id_)
 
-        # dist=Diatricts.objects.filter(id=id)
-        dist=Diatricts()
-        dist.districtCode=id
-        # dist.save()
+        for district in districts:
+            dist_id = district.districtcode
+            #query = f'https://lgdirectory.gov.in/webservices/lgdws/subdistrictList?districtCode={dist_id}'
+            query = config('subdistrict_api_link')+str(dist_id)
+            response = requests.post(query)
+            subdistrict_data = response.json()
+    
+            for subd in subdistrict_data:
+                print(subd)
+                sdcount += 1
+                subdistrict_code = subd['subdistrictCode']
+                if Subdistrict.objects.filter(subdistrictcode=subdistrict_code).exists():
+                    continue
+                english_name = subd['subdistrictNameEnglish']
+                local_name = subd['subdistrictNameLocal']
+
+                sd_data = Subdistrict(
+                    subdistrictcode=subdistrict_code,
+                    englishname=english_name,
+                    localname=local_name,
+                    district=district,
+                )
+                sd_data.save()
+    return HttpResponse(f"You have added a total of {sdcount} subdistricts into the table")
+
+def createvillage(request):
+    vcount = 0
+    subdistrict_data = Subdistrict.objects.all()
+
+    for subdistrict in subdistrict_data:
+        subdistrict_id = subdistrict.subdistrictcode
+
+        # Taking village Data from API
+        #query = f'https://lgdirectory.gov.in/webservices/lgdws/villageList?subDistrictCode={subdistrict_id}'
+        query = config('village_api_link')+str(subdistrict_id)
+
+        response = requests.post(query)
+        village_data = response.json()
+
+
+        for village in village_data:
+            print(village)
+            vcount += 1
+            village_code=village['villageCode']
+            if Village.objects.filter(villagecode =  village_code).exists():
+                continue
+            english_name = village['villageNameEnglish']
+            local_name = village['villageNameLocal']
+
+            v_data = Village(
+                villagecode = village_code,
+                englishname = english_name,
+                localname = local_name,
+                subdistrict = subdistrict
+            )
+
+            v_data.save()
+    return HttpResponse(f"Total {vcount} number of villages are added into the table")
+
+def showstate(request):
+    return HttpResponse('hello bhavesh you are on show state page')
+
+def showdistrict(request):
+    return HttpResponse('hello bhaveh you are on show district page')
+
+def showsubdistrict(request):
+    return HttpResponse('hello bhavesh you are on show district page')
+
+def showvillage(request):
+    return HttpResponseI('hello bhavesh you are on show village page ')
+
+
+# from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+
+class DistrictGeneric(APIView):
+    def get(self,request):
+        id_=request.GET.get('id')
+        print(id_)
+        district_obj = District.objects.filter(state_id=id_)
+        serializer = District(district_obj,many=True)
+        return Response({"status:":200,"payload":serializer.data})
+
+class VillageGeneric(APIView):
+    def get(self, request):
+        village_obj = Village.objects.filter(subdistrict_id=461)
+
+        for i in village_obj:
+            print("hello")
+            break
+        serializer = VillageSerializer(village_obj, many=True)
+        return Response({"status": 200, "payload": serializer.data})
+
+class StateGeneric(APIView):
+    def get(self, request):
+        state_obj = State.objects.filter()
+        serializer = StateSerializer(state_obj, many=True)
+        return Response({"status": 200, "payload": serializer.data})
+
+
 
 
     
-
-        for subd in talukaData:
-            print(subd)
-            subDistrictCode=subd['subdistrictCode']
-            if SubDistrict.objects.filter(subDistrictCode=subDistrictCode).exists():
-                continue
-            subDistrictNameEnglish=subd['subdistrictNameEnglish']
-            subDistrictNameLocal = subd['subdistrictNameLocal']
-            if subd['census2001Code']=='  ' or subd['census2001Code']=='    ':
-                census2001Code=0
-            else:
-                census2001Code=subd['census2001Code']
-            census2011Code =subd['census2011Code']
-           
-
-            sdData=SubDistrict(subDistrictCode=subDistrictCode,subDistrictNameEnglish=subDistrictNameEnglish,subDistrictNameLocal=subDistrictNameLocal,census2001Code=census2001Code,census2011Code=census2011Code,district=dist)
-            sdData.save()
 
 
 

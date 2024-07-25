@@ -25,14 +25,34 @@ class Subdistrict(models.Model):
     district = models.ForeignKey(District,on_delete=models.CASCADE,default=1121,blank=True,null=True)           #how to create the foreign key for the data
     subdistrictcreated = models.DateTimeField(auto_now_add=True,blank=True,null=True)
     subdistrictupdated = models.DateTimeField(auto_now=True,blank=True,null=True)
+    state = models.IntegerField(null=True,blank=True,default=0)                                                  #added data though the querry
+
+from django.db import models
 
 class Village(models.Model):
-    villagecode=models.IntegerField(primary_key=tuple,default=3)
-    englishname=models.CharField(max_length=200,null=True,blank=True)
-    localname=models.CharField(max_length=200,null=True,blank=True)
-    subdistrict=models.ForeignKey(Subdistrict,on_delete=models.CASCADE,default=12342,blank=True,null=True)                  #here we need to store the subdistrict key as foreign key 
-    vilagecreated = models.DateTimeField(auto_now_add=True,blank=True,null=True)
-    villageupdated = models.DateTimeField(auto_now=True,blank=True,null=True)
+    villagecode = models.IntegerField(primary_key=True, default=3)
+    englishname = models.CharField(max_length=200, null=True, blank=True)
+    localname = models.CharField(max_length=200, null=True, blank=True)
+    subdistrict = models.ForeignKey('Subdistrict', on_delete=models.CASCADE, default=12342, blank=True, null=True)                 
+    villagecreated = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    villageupdated = models.DateTimeField(auto_now=True, blank=True, null=True)
+    state = models.ForeignKey('State', null=True, blank=True, default=None, on_delete=models.CASCADE)
+    district = models.ForeignKey('District', null=True, blank=True, default=None, on_delete=models.CASCADE)
+
+
+
+class Crop(models.Model):
+    cropname = models.CharField(max_length=200) 
+    # season = models.CharField(max_length=100, null=True, blank=True)  
+    # area = models.IntegerField(null=True, blank=True)
+    # marketprice = models.IntegerField(null=True, blank=True)
+    # fertilizer = models.IntegerField(null=True, blank=True)
+    # village = models.ForeignKey(Village, on_delete=models.CASCADE, null=True, blank=True)  
+    # subdistrict = models.ForeignKey(Subdistrict, on_delete=models.CASCADE, null=True, blank=True)  
+    # district = models.ForeignKey(District, on_delete=models.CASCADE, null=True, blank=True)  
+    # state = models.ForeignKey(State, on_delete=models.CASCADE, null=True, blank=True) 
+    
+
 
 
     
