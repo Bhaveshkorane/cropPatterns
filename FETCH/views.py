@@ -154,17 +154,20 @@ def createvillage(request):
             v_data.save()
     return HttpResponse(f"Total {vcount} number of villages are added into the table")
 
-def showstate(request):
-    return HttpResponse('hello bhavesh you are on show state page')
+# Delete if there is no use of below and also delete form urls.py
 
-def showdistrict(request):
-    return HttpResponse('hello bhaveh you are on show district page')
 
-def showsubdistrict(request):
-    return HttpResponse('hello bhavesh you are on show district page')
+# def showstate(request):
+#     return HttpResponse('hello bhavesh you are on show state page')
 
-def showvillage(request):
-    return HttpResponseI('hello bhavesh you are on show village page ')
+# def showdistrict(request):
+#     return HttpResponse('hello bhaveh you are on show district page')
+
+# def showsubdistrict(request):
+#     return HttpResponse('hello bhavesh you are on show district page')
+
+# def showvillage(request):
+#     return HttpResponseI('hello bhavesh you are on show village page ')
 
 
 # from rest_framework.decorators import api_view
