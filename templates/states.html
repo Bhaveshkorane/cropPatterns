@@ -1,7 +1,52 @@
 {% extends 'base.html' %}
 
-
-
 {% block content %}
-hello
+<div class="container mt-5">
+    <h2 class="mb-4">Select Region and crop </h2>
+    <form method="POST" action="{% url 'generate_data_view' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="state-select" class="form-label">State</label>
+            <select class="form-select" 
+                    name="state" 
+                    id="state-select"
+                    hx-get="{% url 'district_url' %}"
+                    hx-trigger="change"
+                    hx-target="#district">
+                <option selected>Open select menu</option>
+                {% for i in states %}
+                <option value="{{ i.statecode }}">{{ i.englishname }}</option>
+                {% endfor %} 
+            </select>
+        </div>
+        <div class="mb-3" id="district">
+            <!-- <label for="district-select" class="form-label">District</label> -->
+            {% include 'partials/district.html' %}
+        </div>
+        <div class="mb-3" id="subdistrict">
+            <!-- <label for="subdistrict-select" class="form-label">Subdistrict</label> -->
+            {% include 'partials/subdistrict.html' %}
+        </div>
+        <div class="mb-3" id="village">
+            <!-- <label for="village-select" class="form-label">Village</label> -->
+            {% include 'partials/village.html' %}
+        </div>
+        <div class="mb-3">
+            <label for="crop-select" class="form-label">Crop</label>
+            <select class="form-select" 
+                    name="crop" 
+                    id="crop-select"
+                    hx-get="{% url 'crop_url' %}"
+                    
+                   >
+                <option selected>Open select menu</option>
+                {{crops}}
+                {% for i in crops %}
+                <option value="{{ i.id }}">{{ i.cropname }}</option>
+                {% endfor %} 
+            </select>
+        </div>
+        <input type="submit" class="btn btn-success" value="Generate Data">
+    </form>
+</div>
 {% endblock %}

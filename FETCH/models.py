@@ -55,6 +55,67 @@ class Crop(models.Model):
 
 
 
+
+class Cropdatajson(models.Model):
+    cropdata = models.JSONField(null=True,blank=True,default=None)
+
+
+class AgriculturalData(models.Model):
+    unique_id = models.CharField(max_length=100)
+    village = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    area = models.FloatField()
+    crop_type = models.CharField(max_length=100)
+    area_cultivated = models.FloatField()
+    yield_per_hectare = models.FloatField()
+    soil_type = models.CharField(max_length=100)
+    irrigation_method = models.CharField(max_length=100)
+    temperature_average = models.FloatField()
+    temperature_max = models.FloatField()
+    temperature_min = models.FloatField()
+    rainfall_total_mm = models.FloatField()
+    rainfall_rainy_days = models.IntegerField()
+    humidity_average_percentage = models.FloatField()
+    fertilizer_type = models.CharField(max_length=100)
+    fertilizer_quantity_kg = models.FloatField()
+    pesticide_type = models.CharField(max_length=100)
+    pesticide_quantity_l = models.FloatField()
+    maxfile  =  models.IntegerField(blank=True,null=True)
+
+
+class Cropdata(models.Model):
+    unique_id = models.CharField(max_length=100,primary_key=True)
+    area_cultivated = models.IntegerField(null=True,blank=True)
+    crop_type = models.CharField(max_length=100,null=True,blank=True)
+    yeild_perhectare = models.IntegerField(null=True,blank=True)
+    soil_type = models.CharField(max_length=50,null=True,blank=True)
+    irrigation_method = models.CharField(max_length=100,null=True,blank=True)
+    village = models.ForeignKey(Village,on_delete=models.CASCADE,null=True,blank=True)
+
+class Weather(models.Model):
+    temp_min = models.IntegerField(null=True,blank=True)
+    temp_max = models.IntegerField(null=True,blank=True)
+    temp_avg = models.IntegerField(null=True,blank=True)
+    rainfall_total = models.IntegerField(null=True,blank=True)
+    rainfall_rainy_days = models.IntegerField(null=True,blank=True)
+    humidity = models.IntegerField(null=True,blank=True)
+    crop = models.ForeignKey(Cropdata, on_delete=models.CASCADE,default=None, to_field='unique_id')
+
+
+class Pesticide(models.Model):
+    pesticide_type = models.CharField(max_length=100,null=True,blank=True)
+    quantity_l = models.IntegerField(null=True,blank=True)
+    crop = models.ForeignKey(Cropdata, on_delete=models.CASCADE, null=True, blank=True)
+
+class fertilizer(models.Model):
+    fertilizer_type = models.CharField(max_length=100,null=True,blank=True)
+    quantity_kg = models.IntegerField()
+    crop = models.ForeignKey(Cropdata, on_delete=models.CASCADE, null=True, blank=True)
+
+
+
     
+
 
 
