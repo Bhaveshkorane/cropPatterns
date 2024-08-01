@@ -18,10 +18,16 @@ from .views import subdistrict
 from .views import village
 from .views import crops
 from .views import savejson
+from .views import showtables
+
+# For user registraion 
+from .views import registeruser
+from .views import loginuser
 
 from django.urls import path
 from . import views
 from .views import GenerateDataView  
+
 
 
 urlpatterns = [
@@ -49,7 +55,14 @@ urlpatterns = [
     path('subdistrict/',subdistrict,name='subdistrict_url'),
     path('village/',village,name='village_url'),
     path('crop/',crops,name='crop_url'),
-    path('savejson/',savejson,name='showjson_url'),
+    path('savejson/',savejson,name='savejson_url'),
+    path('showtables/',showtables,name='showtables_url'),
+
+
+
+    # User registrationa nd login
+    path('register/',registeruser,name='register_url'),
+    path('login/',loginuser,name='login_url')
 
 
 

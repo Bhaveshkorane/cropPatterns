@@ -2,15 +2,55 @@
 
 {% block content %}
 <div class="container mt-5">
+<form action="{%url 'showtables_url' %}" method="POST">
+    {% csrf_token %}    
+    <div class="mb-3">
+        {% include 'partials/state.html' %}
+    </div>
+    <div class="mb-3" id="district">
+        {% include 'partials/district.html' %}
+    </div>
+    <div class="mb-3" id="subdistrict">
+        {% include 'partials/subdistrict.html' %}
+    </div>
+    <div class="mb-3" id="village">
+        {% include 'partials/village.html' %}
+    </div>
+    <input type="submit" class="button btn-success">
+    
 
-    <h1>The generated data without processing is</h1>
-    {{data}}
+</form>
+hello bhavesh
+<div id="result">
+    {{crops}}
+    <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Area</th>
+            <th scope="col">Type</th>
+            <th scope="col">yeild</th>
+            <th scope="col">irrigation</th>
+            <th scope="col">soil_type</th>
 
-    <h2 class="mb-4">Generated Data</h2>
-    {% if data %}
-    <pre>{{ data|json_script:"data" }}</pre>
-    {% else %}
-    <p>No data available</p>
-    {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+            {% for i in crops %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{i.area_cultivated}}</td>
+            <td>{{i.crop_type}}</td>
+            <td>{{i.yeild_perhectare}}</td>
+            <td>{{i.irrigation_method}}</td>
+            <td>{{i.soil_type}}</td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+        <a href="{% url 'state_url'%}"><button class="btn-success">add more data</button></a>
+    </div>
 </div>
 {% endblock %}

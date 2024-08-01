@@ -29,8 +29,19 @@ from django.views import View
 # from rest_framework import response
 # Create your views here.
 
+
+# For messages 
+from django.contrib import messages
+
 #for .env file
 from decouple import config
+
+
+# For user creation and login
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from django.contrib.auth import login
+
 
 def createstate(request):
     count=0
@@ -207,28 +218,23 @@ def state(request):
 
 def crops(request):
     cp=Crop.objects.all()
-    for crop in cp:
-        print(crop)
     context = {'crops':cp}
     return render(request,'state.html',context)
 
 def district(request):
     state = request.GET.get('state')
-    print(state)
     dist = District.objects.filter(state_id=state)
     context = {'districts': dist}
     return render(request, 'partials/district.html', context)
 
 def subdistrict(request):
     dist = request.GET.get('district')
-    print(dist)
     subdistrict = Subdistrict.objects.filter(district_id=dist)
     context = {'subdistricts': subdistrict}
     return render(request, 'partials/subdistrict.html', context)
 
 def village(request):
     subdistrict = request.GET.get('subdistrict')
-    print(subdistrict)
     village = Village.objects.filter(subdistrict_id=subdistrict)
     context = {'villages': village}
     return render(request, 'partials/village.html', context)
@@ -245,8 +251,8 @@ class generatedata(APIView):
         data = request.data
         village = data['village']
         village_code = data['village_code']
-        district = data['district']
-        state = data['state']
+        # district = data['district']
+        # state = data['state']
         crop = data['crop']
        
 
@@ -258,62 +264,60 @@ class generatedata(APIView):
         soils=['clay', 'sandy', 'silty', 'peaty', 'chalky', 'loamy']
         soil_index=random.randint(0,5)
         soil=soils[soil_index]
-        
+
+        irrigatoins=['flooding','sprinkler','drip']
+        irr_index=random.randint(0,2)
+        irrigatoin=irrigatoins[irr_index]
+
         data = {
-            'uniqueid':unique_id,
-            'village':village,             #users input from form
-            'state':state,
-            'district':district,
-            'village_code':village_code,
-            "agricultural_data" :{
-                "area":area,
-                
-                        "crop_type":crop,         #users input form 
-                        "area_cultivated":random.randint(1,500),
-                        "yeild_perhectare":random.randint(5,15),
-                        "soil_type":soil,
-                        "irrigation_method":'flooing',
-                        "weather_data":
-                        {
-                            "temprature":{
-                                "average":random.randint(1,500),
-                                "max":random.randint(1,500),
-                                "min":random.randint(1,500)
+                    'uniqueid': unique_id,
+                    'village': village,  # users input from form
+                    # 'state': state,
+                    # 'district': district,
+                    'village_code': village_code,
+                    "agricultural_data": {
+                        "area": area,
+                        "crop_type": crop,  # users input from form
+                        "area_cultivated": random.randint(1, 500),
+                        "yeild_perhectare": random.randint(5, 15),
+                        "soil_type": soil,
+                        "irrigation_method": irrigatoin,
+                        "weather_data": {
+                            "temprature": {
+                                "average": random.randint(1, 500),
+                                "max": random.randint(1, 500),
+                                "min": random.randint(1, 500)
                             },
-                            "Rain_fall":{
-                                "total_mm":random.randint(1000,3500),
-                                "rainy_days":random.randint(1000,3000)
+                            "Rain_fall": {
+                                "total_mm": random.randint(1000, 3500),
+                                "rainy_days": random.randint(1000, 3000)
                             },
-                            "humidity":{
-                                "average_percentage":random.randint(1,100)
+                            "humidity": {
+                                "average_percentage": random.randint(1, 100)
                             }
-
-
                         },
                         "pesticide_and_fertilizer_usage": {
-                                    "fertilizers": [
-                                                        {
-                                                            "type": "NPK",
-                                                            "quantity_kg": random.randint(500,1000)
-                                                        },
-                                                        {
-                                                            "type": "Compost",
-                                                            "quantity_kg": random.randint(600,2000)
-                                                        }
-                                                    ],
-                                    "pesticides": [
-                                                    {
-                                                        "type": "Fungicide",
-                                                        "quantity_l": random.randint(40,200)
-                                                    }
-                                    ]
-                            }
-                    
-            }
-        
-        
-        }
+                            "fertilizers": [
+                                {
+                                    "type": "NPK",
+                                    "quantity_kg": random.randint(500, 1000)
+                                },
+                                {
+                                    "type": "Compost",
+                                    "quantity_kg": random.randint(600, 2000)
+                                }
+                            ],
+                            "pesticides": [
+                                {
+                                    "type": "Fungicide",
+                                    "quantity_l": random.randint(40, 200)
+                                }
+                            ]
+                        }
+                    }
+                }
 
+        
        
         return Response({"status:":200,"payload":data})
 
@@ -332,8 +336,8 @@ class GenerateDataView(View):
         state_name = State.objects.get(statecode=state).englishname
 
         # Call the API
-        api_url = 'http://127.0.0.1:8000/gene/'
-        api_response = requests.get(api_url, data={'village': village_name, 'crop': crop_name,'state':state_name,'district':district_name,'village_code':village})
+        api_url = config('data_generator_api')
+        api_response = requests.get(api_url, data={'village': village_name, 'crop': crop_name,'village_code':village})
         
         # Check if the request was successful
         if api_response.status_code == 200:
@@ -343,16 +347,21 @@ class GenerateDataView(View):
 
         dt=Cropdatajson(cropdata=data)
         dt.save()
+        
+        messages.success(request, "Data generated and json saved in the database ")
 
         return redirect('/state/')
 
         return render(request, 'data.html', {'data': data})
 
+        
 
 def savejson(request):
     jsondata = Cropdatajson.objects.values()
+    print("jaons saved------------->")
 
     for data in jsondata:
+
         # For storing the corp data
         unique_id = data['cropdata']['uniqueid']
         crop_type = data['cropdata']['agricultural_data']['crop_type']
@@ -364,7 +373,18 @@ def savejson(request):
 
         village_=Village()
         village_.villagecode=village
-        
+
+
+        vil=Village.objects.get(villagecode=village)
+
+        state_ =  State()
+        state_.statecode = vil.state_id
+
+        district_ = District()
+        district_.districtcode = vil.district_id
+
+        subdistrict_ = Subdistrict()
+        subdistrict_.subdistrictcode = vil.subdistrict_id
         
        
         # For storing the weather data
@@ -381,22 +401,29 @@ def savejson(request):
                           area_cultivated=area_cultivated,
                           yeild_perhectare=yeild_perhectare,
                           soil_type=soil_type,irrigation_method=irrigation_method,
-                          village=village_
+                          village=village_,
+                          district=district_,
+                          subdistrict=subdistrict_,
+                          state=state_
+
                         )
 
         # For passing it as foreign key 
         cropinstance = Cropdata()
         cropinstance.unique_id = unique_id
 
-        saveweather = Weather(temp_avg=temp_avg,
-                              temp_max=temp_max,
-                              temp_min=temp_min,
-                              rainfall_rainy_days=rainfall_rainy_days,
-                              rainfall_total=rainfall_total,
-                              humidity=humidity,
-                              crop=cropinstance
-                            )
-                    
+
+        if not (Weather.objects.filter(crop_id=cropinstance).exists()):
+            saveweather = Weather(temp_avg=temp_avg,
+                                temp_max=temp_max,
+                                temp_min=temp_min,
+                                rainfall_rainy_days=rainfall_rainy_days,
+                                rainfall_total=rainfall_total,
+                                humidity=humidity,
+                                crop=cropinstance
+                                )
+            saveweather.save()
+                        
 
         npk = data['cropdata']['agricultural_data']['pesticide_and_fertilizer_usage']['fertilizers'][0]['quantity_kg']
         compost = data['cropdata']['agricultural_data']['pesticide_and_fertilizer_usage']['fertilizers'][1]['quantity_kg']
@@ -405,35 +432,120 @@ def savejson(request):
         type2="compost"
 
         fertilizer_list=[]
-        fertilizer1 = fertilizer(
-                                    fertilizer_type=type1,
-                                    quantity_kg=npk,
+
+        if not (fertilizer.objects.filter(fertilizer_type=type1).exists() and fertilizer.objects.filter(crop_id=cropinstance)):
+            fertilizer1 = fertilizer(
+                                        fertilizer_type=type1,
+                                        quantity_kg=npk,
+                                        crop=cropinstance
+                                    )
+
+            fertilizer2 = fertilizer(fertilizer_type=type2,
+                                    quantity_kg=compost,
                                     crop=cropinstance
-                                 )
+                                    )
+            fertilizer_list.extend([fertilizer1, fertilizer2])
 
-        fertilizer2 = fertilizer(fertilizer_type=type2,
-                                quantity_kg=compost,
+        if not (Pesticide.objects.filter(crop_id=cropinstance).exists()):
+            savepesticide = Pesticide(pesticide_type="Fungicide",
+                                quantity_l=quantity_l,
                                 crop=cropinstance
-                                )
+            )
 
-        savepesticide = Pesticide(pesticide_type="Fungicide",
-                              quantity_l=quantity_l,
-                              crop=cropinstance
-        )
+            savepesticide.save()
 
-        fertilizer_list.extend([fertilizer1, fertilizer2])
+        
 
         # Inserting the data into the table
         fertilizer.objects.bulk_create(fertilizer_list)
-        savepesticide.save()               
+                       
         savecrop.save()
-        saveweather.save()
+        
 
 
        
+    return redirect('/showtables/')
+    return HttpResponse("the data you have fetched successfully ")
+
+
+def showtables(request):
+    state_data = State.objects.all()
+    crop_data = {}
+  
+    
+    if request.method == 'POST':
+        stateid = request.POST.get('state')
+        districtid = request.POST.get('district')
+        subdistrictid = request.POST.get('subdistrict')
+        villageid = request.POST.get('village')
+
+        if state != "Open select menu":
+            if districtid != "Open select menu":
+                if subdistrictid != "Open select menu": 
+                    if villageid != "Open select menu":
+                        crop_data = Cropdata.objects.filter(village_id=int(villageid))
+                    else:
+                        crop_data = Cropdata.objects.filter(subdistrict_id=int(subdistrictid))
+                else:
+                    crop_data = Cropdata.objects.filter(district_id=int(districtid))
+            else:
+                crop_data = Cropdata.objects.filter(state_id=int(stateid))
+
         
 
-    return redirect('/state/')
-    return HttpResponse("the data you have fetched successfully ")
+    context = {'crops': crop_data, 'states': state_data}
+    return render(request, 'data.html', context)
+    
+        
+        
+
+
+def registeruser(request):
+    context = {'uname': "", 'email': "", 'pass1': "", 'pass2': "", 'fname': "", 'lname': ""}
+
+    if request.method == "POST":
+        uname = request.POST.get('uname')
+        fname = request.POST.get('fname')
+        lname = request.POST.get('lname')
+        email = request.POST.get('uemail')
+        pass1 = request.POST.get('Password1')
+        pass2 = request.POST.get('Password2')
+
+        if pass1 == pass2:
+            if not User.objects.filter(username=uname).exists():
+                if not User.objects.filter(email=email).exists():
+                    user = User.objects.create_user(username=uname, email=email, password=pass1, first_name=fname, last_name=lname)
+                    user.save()
+                    messages.success(request, "User created successfully")
+                    return redirect('/login/')
+                else:
+                    messages.error(request, "Email Already Exists")
+            else:
+                messages.error(request, "Username already exists")
+        else:
+            messages.error(request, "Passwords do not match")
+        context = {'uname': uname, 'email': email, 'pass1': pass1, 'pass2': pass2, 'fname': fname, 'lname': lname}
+    return render(request, 'registration.html', context)
+
+def loginuser(request):
+    if request.method == "POST":
+        uname = request.POST.get('uname')
+        password = request.POST.get('Password')
+
+        user = authenticate(request,username=uname, password=password)
+
+        if user is not None:
+            login(request, user)
+            print("Authenticated user: ", user)
+            return redirect('/state/')
+        else:
+            print("Authentication failed")
+            messages.error(request, "Please Enter the correct Credentials")
+
+    return render(request, 'login.html')
+
+
+
+
 
 

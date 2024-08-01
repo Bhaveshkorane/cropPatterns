@@ -91,7 +91,10 @@ class Cropdata(models.Model):
     yeild_perhectare = models.IntegerField(null=True,blank=True)
     soil_type = models.CharField(max_length=50,null=True,blank=True)
     irrigation_method = models.CharField(max_length=100,null=True,blank=True)
-    village = models.ForeignKey(Village,on_delete=models.CASCADE,null=True,blank=True)
+    village = models.ForeignKey(Village, on_delete=models.CASCADE,null=True,blank=True)
+    state = models.ForeignKey(State, on_delete=models.CASCADE,null=True,blank=True,default=27)
+    district = models.ForeignKey(District,on_delete=models.CASCADE,null=True,blank=True,default=480)
+    subdistrict = models.ForeignKey(Subdistrict,on_delete=models.CASCADE,null=True,blank=True,default=3648)
 
 class Weather(models.Model):
     temp_min = models.IntegerField(null=True,blank=True)

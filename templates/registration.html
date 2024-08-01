@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-body">
+            <div>
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <form method="POST" action="{% url 'register_url' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="uname" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="uname" name="uname" value="{{ uname }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="fname" class="form-label">First name</label>
+                    <input type="text" class="form-control" id="fname" name="fname" value="{{ fname }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="lname" class="form-label">Last name</label>
+                    <input type="text" class="form-control" id="lname" name="lname" value="{{ lname }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="uemail" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="uemail" name="uemail" value="{{ email }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="Password1" class="form-label">Enter Password</label>
+                    <input type="password" class="form-control" id="Password1" name="Password1" required>
+                </div>
+                <div class="mb-3">
+                    <label for="Password2" class="form-label">Re-enter Password</label>
+                    <input type="password" class="form-control" id="Password2" name="Password2" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+            Already a user? <a href="{% url 'login_url' %}">Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
