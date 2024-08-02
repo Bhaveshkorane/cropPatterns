@@ -58,6 +58,7 @@ class Crop(models.Model):
 
 class Cropdatajson(models.Model):
     cropdata = models.JSONField(null=True,blank=True,default=None)
+    added = models.IntegerField(null=True,blank=True,default=0)
 
 
 class AgriculturalData(models.Model):

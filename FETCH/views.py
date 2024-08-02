@@ -43,6 +43,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
 
 
 def createstate(request):
@@ -211,14 +212,17 @@ class StateGeneric(APIView):
 
 
 # Here we are doing it for drop down menu
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login/")
 def state(request):
     st = State.objects.all()
+
+    
     cp=Crop.objects.all()
     context = {'states': st,'crops':cp}
     return render(request, 'states.html', context)
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def crops(request):
     cp=Crop.objects.all()
     context = {'crops':cp}
@@ -351,7 +355,7 @@ class GenerateDataView(View):
                 village_name = vil.englishname
                 village_code = vil.villagecode
                 # print(vil.villagecode)
-                ct += 1
+                
 
                 # Call the API
                 api_url = config('data_generator_api')
@@ -363,25 +367,32 @@ class GenerateDataView(View):
                     data = api_response.json().get('payload')
                 else:
                     data = None
+                # print(data['uniqueid'],"0----------------------------------------------------------------------------------------------->")
 
                 dt=Cropdatajson(cropdata=data)
+                # savejson(data)
+                ct += 1
                 dt.save()
+
+
                 if ct==100:
                     break
 
         messages.success(request, "Data generated and json saved in the database ")
 
-        return redirect('/state/')
+        # return redirect('/state/')
 
-        return render(request, 'data.html', {'data': data})
+        return render(request, 'data.html', {'data': data,'count':ct})
 
         
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def savejson(request):
     jsondata = Cropdatajson.objects.values()
-    print("jaons saved------------->")
-
+    fetched = 0
+    inserted = 0
     for data in jsondata:
+
+        fetched += 1
 
         # For storing the corp data
         unique_id = data['cropdata']['uniqueid']
@@ -437,6 +448,7 @@ def savejson(request):
 
 
         if not (Weather.objects.filter(crop_id=cropinstance).exists()):
+            inserted += 1
             saveweather = Weather(temp_avg=temp_avg,
                                 temp_max=temp_max,
                                 temp_min=temp_min,
@@ -483,17 +495,127 @@ def savejson(request):
         fertilizer.objects.bulk_create(fertilizer_list)
                        
         savecrop.save()
-        
-
-
-       
+    print(f"fetched {fetched}----------------------------------------------->")
+    print(f"inserted {inserted}--------------------------------------------->")
+    messages.success(request,"Data stored successfully into the respecive tables ")    
     return redirect('/showtables/')
     return HttpResponse("the data you have fetched successfully ")
 
+# def savejson(data):
+#     # jsondata = Cropdatajson.objects.values()
+#     # for data in jsondata:
+
+#         # For storing the corp data
+#     unique_id = data['uniqueid']
+#     crop_type = data['agricultural_data']['crop_type']
+#     area_cultivated = data['agricultural_data']['area_cultivated']
+#     yeild_perhectare = data['agricultural_data']['yeild_perhectare']
+#     soil_type = data['agricultural_data']['soil_type']
+#     irrigation_method = data['agricultural_data']['irrigation_method']
+#     village = int(data['village_code'])
+
+    
+
+#     village_=Village()
+#     village_.villagecode=int(village)
+
+
+#     vil=Village.objects.get(villagecode=int(village))
+
+#     state_ =  State()
+#     state_.statecode = vil.state_id
+
+#     district_ = District()
+#     district_.districtcode = vil.district_id
+
+#     subdistrict_ = Subdistrict()
+#     subdistrict_.subdistrictcode = vil.subdistrict_id
+    
+    
+#     # For storing the weather data
+#     temp_min = data['agricultural_data']['weather_data']['temprature']['max']
+#     temp_max = data['agricultural_data']['weather_data']['temprature']['min']
+#     temp_avg = data['agricultural_data']['weather_data']['temprature']['average']
+#     rainfall_total = data['agricultural_data']['weather_data']['Rain_fall']['total_mm']
+#     rainfall_rainy_days = data['agricultural_data']['weather_data']['Rain_fall']['rainy_days']
+#     humidity = data['agricultural_data']['weather_data']['humidity']['average_percentage']
+    
+
+#     savecrop = Cropdata(unique_id=unique_id,
+#                         crop_type=crop_type,
+#                         area_cultivated=area_cultivated,
+#                         yeild_perhectare=yeild_perhectare,
+#                         soil_type=soil_type,irrigation_method=irrigation_method,
+#                         village=village_,
+#                         district=district_,
+#                         subdistrict=subdistrict_,
+#                         state=state_
+
+#                     )
+
+#     # For passing it as foreign key 
+#     cropinstance = Cropdata()
+#     cropinstance.unique_id = unique_id
+
+
+#     if not (Weather.objects.filter(crop_id=cropinstance).exists()):
+#         saveweather = Weather(temp_avg=temp_avg,
+#                             temp_max=temp_max,
+#                             temp_min=temp_min,
+#                             rainfall_rainy_days=rainfall_rainy_days,
+#                             rainfall_total=rainfall_total,
+#                             humidity=humidity,
+#                             crop=cropinstance
+#                             )
+#         saveweather.save()
+                    
+
+#     npk = data['agricultural_data']['pesticide_and_fertilizer_usage']['fertilizers'][0]['quantity_kg']
+#     compost = data['agricultural_data']['pesticide_and_fertilizer_usage']['fertilizers'][1]['quantity_kg']
+#     quantity_l = data['agricultural_data']['pesticide_and_fertilizer_usage']['pesticides'][0]['quantity_l']
+#     type1="npk"
+#     type2="compost"
+
+#     fertilizer_list=[]
+
+#     if not (fertilizer.objects.filter(fertilizer_type=type1).exists() and fertilizer.objects.filter(crop_id=cropinstance)):
+#         fertilizer1 = fertilizer(
+#                                     fertilizer_type=type1,
+#                                     quantity_kg=npk,
+#                                     crop=cropinstance
+#                                 )
+
+#         fertilizer2 = fertilizer(fertilizer_type=type2,
+#                                 quantity_kg=compost,
+#                                 crop=cropinstance
+#                                 )
+#         fertilizer_list.extend([fertilizer1, fertilizer2])
+
+#     if not (Pesticide.objects.filter(crop_id=cropinstance).exists()):
+#         savepesticide = Pesticide(pesticide_type="Fungicide",
+#                             quantity_l=quantity_l,
+#                             crop=cropinstance
+#         )
+
+#         savepesticide.save()
+
+    
+
+#     # Inserting the data into the table
+#     fertilizer.objects.bulk_create(fertilizer_list)          
+#     savecrop.save()
+
+    # return redirect('/showtables/')
+    # return HttpResponse("the data you have fetched successfully ")
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login/")
 def showtables(request):
     state_data = State.objects.all()
     crop_data = {}
+
+    pesticide_data = {}
+    fertilizer_data = {}
+    weather_data = {}
   
     
     if request.method == 'POST':
@@ -507,6 +629,7 @@ def showtables(request):
                 if subdistrictid != "Open select menu": 
                     if villageid != "Open select menu":
                         crop_data = Cropdata.objects.filter(village_id=int(villageid))
+                        pesticide_data = Pesticide.objects.filter(crop_id=i.unique_id)
                     else:
                         crop_data = Cropdata.objects.filter(subdistrict_id=int(subdistrictid))
                 else:
@@ -514,9 +637,17 @@ def showtables(request):
             else:
                 crop_data = Cropdata.objects.filter(state_id=int(stateid))
 
+
+    # print(crop_data,"------------------>")
+    for i in crop_data:
+        pesticide_data = Pesticide.objects.filter(crop_id=i.unique_id)
+
+        for i in pesticide_data:
+            print(i.pesticide_type)
+
         
 
-    context = {'crops': crop_data, 'states': state_data}
+    context = {'crops': crop_data, 'states': state_data,"pesticide":pesticide_data}
     return render(request, 'data.html', context)
     
         
@@ -550,6 +681,10 @@ def registeruser(request):
         context = {'uname': uname, 'email': email, 'pass1': pass1, 'pass2': pass2, 'fname': fname, 'lname': lname}
     return render(request, 'registration.html', context)
 
+
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def loginuser(request):
     if request.method == "POST":
         uname = request.POST.get('uname')
@@ -567,23 +702,24 @@ def loginuser(request):
 
     return render(request, 'login.html')
 
-
-# def logouturl(request):
-#     logout(request)
-#     return redirect('/login/')
-
-
-from django.shortcuts import redirect
-from django.contrib.auth import logout
-from django.utils.deprecation import MiddlewareMixin
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logouturl(request):
     logout(request)
-    response = redirect('/login/')
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-    return response
+    return redirect('/login/')
+
+
+# from django.shortcuts import redirect
+# from django.contrib.auth import logout
+# from django.utils.deprecation import MiddlewareMixin
+
+# def logouturl(request):
+#     # print(f"session {request.request}")
+#     logout(request)
+#     response = redirect('/login/')
+#     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+#     response['Pragma'] = 'no-cache'
+#     response['Expires'] = '0'
+#     return response
 
      
 

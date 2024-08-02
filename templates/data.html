@@ -1,8 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>   
+{% endif %}
 <div class="container mt-5">
-<form action="{%url 'showtables_url' %}" method="POST">
+<form action="{% url 'showtables_url' %}" method="POST" onsubmit="return validateForm()">
     {% csrf_token %}    
     <div class="mb-3">
         {% include 'partials/state.html' %}
@@ -17,40 +24,54 @@
         {% include 'partials/village.html' %}
     </div>
     <input type="submit" class="button btn-success">
-    
-
 </form>
-hello bhavesh
+
 <div id="result">
-    {{crops}}
     <table class="table table-bordered">
         <thead>
           <tr>
             <th scope="col">#</th>
             <th scope="col">Area</th>
             <th scope="col">Type</th>
-            <th scope="col">yeild</th>
-            <th scope="col">irrigation</th>
-            <th scope="col">soil_type</th>
-
+            <th scope="col">Irrigation</th>
+            <th scope="col">Soil Type</th>
           </tr>
         </thead>
         <tbody>
             {% for i in crops %}
           <tr>
             <th scope="row">{{ forloop.counter }}</th>
-            <td>{{i.area_cultivated}}</td>
-            <td>{{i.crop_type}}</td>
-            <td>{{i.yeild_perhectare}}</td>
-            <td>{{i.irrigation_method}}</td>
-            <td>{{i.soil_type}}</td>
+            <td>{{ i.area_cultivated }}</td>
+            <td>{{ i.crop_type }}</td>
+            <td>{{ i.irrigation_method }}</td>
+            <td>{{ i.soil_type }}</td>
+           
 
           </tr>
           {% endfor %}
         </tbody>
       </table>
 
-        <a href="{% url 'state_url'%}"><button class="btn-success">add more data</button></a>
+      <a href="{% url 'state_url' %}"><button class="btn-success">Add more data</button></a>
     </div>
 </div>
+
+Total data from JSON to the tables: {{ count }}
+
+{{pesticide}}
+
+{%for i in pesticide%}
+{{i.pesticide_type}}
+{% endfor %}
+
+<script>
+    function validateForm() {
+        var stateSelect = document.getElementById("state-select");
+        if (stateSelect.value === "Open select menu") {
+            alert("Please select a state.");
+            return false;
+        }
+        return true;
+    }
+</script>
 {% endblock %}
