@@ -19,6 +19,7 @@ from .views import village
 from .views import crops
 from .views import savejson
 from .views import showtables
+from .views import logouturl
 
 # For user registraion 
 from .views import registeruser
@@ -62,7 +63,8 @@ urlpatterns = [
 
     # User registrationa nd login
     path('register/',registeruser,name='register_url'),
-    path('login/',loginuser,name='login_url')
+    path('login/',loginuser,name='login_url'),
+    path('logout/',logouturl,name='logout_url')
 
 
 

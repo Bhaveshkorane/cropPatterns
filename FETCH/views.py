@@ -41,6 +41,8 @@ from decouple import config
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 
 
 def createstate(request):
@@ -210,6 +212,7 @@ class StateGeneric(APIView):
 
 # Here we are doing it for drop down menu
 
+@login_required(login_url="/login/")
 def state(request):
     st = State.objects.all()
     cp=Crop.objects.all()
@@ -251,6 +254,9 @@ class generatedata(APIView):
         data = request.data
         village = data['village']
         village_code = data['village_code']
+
+        print("village code--------------------------->",village_code)
+        
         # district = data['district']
         # state = data['state']
         crop = data['crop']
@@ -325,29 +331,44 @@ class generatedata(APIView):
 
 class GenerateDataView(View):
     def post(self, request):
-        village = request.POST.get('village')
-        state = request.POST.get('state')
+        # village = request.POST.get('village')
+        # state = request.POST.get('state')
         district = request.POST.get('district')
         crop = request.POST.get('crop')
 
-        village_name = Village.objects.get(villagecode=village).englishname
+        # village_name = Village.objects.get(villagecode=village).englishname
         crop_name = Crop.objects.get(id=crop).cropname
-        district_name = District.objects.get(districtcode=district).englishname
-        state_name = State.objects.get(statecode=state).englishname
+        # district_name = District.objects.get(districtcode=district).englishname
+        # state_name = State.objects.get(statecode=state).englishname
 
-        # Call the API
-        api_url = config('data_generator_api')
-        api_response = requests.get(api_url, data={'village': village_name, 'crop': crop_name,'village_code':village})
-        
-        # Check if the request was successful
-        if api_response.status_code == 200:
-            data = api_response.json().get('payload')
-        else:
-            data = None
 
-        dt=Cropdatajson(cropdata=data)
-        dt.save()
-        
+        subdistricts = Subdistrict.objects.filter(district_id=district)
+        ct=0
+        for subd in subdistricts:
+            # print(subd.subdistrictcode)
+            villages = Village.objects.filter(subdistrict_id=subd.subdistrictcode)
+            for vil in villages:
+                village_name = vil.englishname
+                village_code = vil.villagecode
+                # print(vil.villagecode)
+                ct += 1
+
+                # Call the API
+                api_url = config('data_generator_api')
+                api_response = requests.get(api_url, data={'village': village_name, 'crop': crop_name,'village_code':village_code})
+                
+                # Check if the request was successful
+                if api_response.status_code == 200:
+                    print(ct)
+                    data = api_response.json().get('payload')
+                else:
+                    data = None
+
+                dt=Cropdatajson(cropdata=data)
+                dt.save()
+                if ct==100:
+                    break
+
         messages.success(request, "Data generated and json saved in the database ")
 
         return redirect('/state/')
@@ -369,13 +390,15 @@ def savejson(request):
         yeild_perhectare = data['cropdata']['agricultural_data']['yeild_perhectare']
         soil_type = data['cropdata']['agricultural_data']['soil_type']
         irrigation_method = data['cropdata']['agricultural_data']['irrigation_method']
-        village = data['cropdata']['village_code']
+        village = int(data['cropdata']['village_code'])
+
+        print("------------------village code =",type(village))
 
         village_=Village()
-        village_.villagecode=village
+        village_.villagecode=int(village)
 
 
-        vil=Village.objects.get(villagecode=village)
+        vil=Village.objects.get(villagecode=int(village))
 
         state_ =  State()
         state_.statecode = vil.state_id
@@ -467,7 +490,7 @@ def savejson(request):
     return redirect('/showtables/')
     return HttpResponse("the data you have fetched successfully ")
 
-
+@login_required(login_url="/login/")
 def showtables(request):
     state_data = State.objects.all()
     crop_data = {}
@@ -543,6 +566,26 @@ def loginuser(request):
             messages.error(request, "Please Enter the correct Credentials")
 
     return render(request, 'login.html')
+
+
+# def logouturl(request):
+#     logout(request)
+#     return redirect('/login/')
+
+
+from django.shortcuts import redirect
+from django.contrib.auth import logout
+from django.utils.deprecation import MiddlewareMixin
+
+def logouturl(request):
+    logout(request)
+    response = redirect('/login/')
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
+     
 
 
 
