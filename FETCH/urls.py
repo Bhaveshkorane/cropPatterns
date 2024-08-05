@@ -20,6 +20,7 @@ from .views import crops
 from .views import savejson
 from .views import showtables
 from .views import logouturl
+from .views import queue
 
 # For user registraion 
 from .views import registeruser
@@ -56,7 +57,7 @@ urlpatterns = [
     path('subdistrict/',subdistrict,name='subdistrict_url'),
     path('village/',village,name='village_url'),
     path('crop/',crops,name='crop_url'),
-    path('savejson/',savejson,name='savejson_url'),
+    path('savejson/<id>/',savejson,name='savejson_url'),
     path('showtables/',showtables,name='showtables_url'),
 
 
@@ -64,7 +65,10 @@ urlpatterns = [
     # User registrationa nd login
     path('register/',registeruser,name='register_url'),
     path('login/',loginuser,name='login_url'),
-    path('logout/',logouturl,name='logout_url')
+    path('logout/',logouturl,name='logout_url'),
+
+
+    path('queue/',queue,name='queue_url')
 
 
 

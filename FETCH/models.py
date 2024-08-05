@@ -59,6 +59,7 @@ class Crop(models.Model):
 class Cropdatajson(models.Model):
     cropdata = models.JSONField(null=True,blank=True,default=None)
     added = models.IntegerField(null=True,blank=True,default=0)
+    district = models.CharField(null=True,blank=True,default=None)
 
 
 class AgriculturalData(models.Model):

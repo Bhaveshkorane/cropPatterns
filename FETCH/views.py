@@ -342,7 +342,7 @@ class GenerateDataView(View):
 
         # village_name = Village.objects.get(villagecode=village).englishname
         crop_name = Crop.objects.get(id=crop).cropname
-        # district_name = District.objects.get(districtcode=district).englishname
+        district_name = District.objects.get(districtcode=district).englishname
         # state_name = State.objects.get(statecode=state).englishname
 
 
@@ -368,8 +368,8 @@ class GenerateDataView(View):
                 else:
                     data = None
                 # print(data['uniqueid'],"0----------------------------------------------------------------------------------------------->")
-
-                dt=Cropdatajson(cropdata=data)
+                district = district 
+                dt = Cropdatajson(cropdata=data,added=district,district=district_name)
                 # savejson(data)
                 ct += 1
                 dt.save()
@@ -381,13 +381,15 @@ class GenerateDataView(View):
         messages.success(request, "Data generated and json saved in the database ")
 
         # return redirect('/state/')
-
-        return render(request, 'data.html', {'data': data,'count':ct})
+        return redirect('/queue/')
+        
 
         
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def savejson(request):
-    jsondata = Cropdatajson.objects.values()
+def savejson(request,id):
+    jsondata = Cropdatajson.objects.filter(added=id).values()
+    
+
     fetched = 0
     inserted = 0
     for data in jsondata:
@@ -488,6 +490,7 @@ def savejson(request):
             )
 
             savepesticide.save()
+        
 
         
 
@@ -497,8 +500,10 @@ def savejson(request):
         savecrop.save()
     print(f"fetched {fetched}----------------------------------------------->")
     print(f"inserted {inserted}--------------------------------------------->")
-    messages.success(request,"Data stored successfully into the respecive tables ")    
-    return redirect('/showtables/')
+    messages.success(request,"Data stored successfully into the respecive tables ")  
+
+    jsondata = Cropdatajson.objects.filter(added=id).update(added=0)  
+    return redirect('/queue/')
     return HttpResponse("the data you have fetched successfully ")
 
 # def savejson(data):
@@ -607,6 +612,8 @@ def savejson(request):
 
     # return redirect('/showtables/')
     # return HttpResponse("the data you have fetched successfully ")
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login/")
 def showtables(request):
@@ -629,7 +636,7 @@ def showtables(request):
                 if subdistrictid != "Open select menu": 
                     if villageid != "Open select menu":
                         crop_data = Cropdata.objects.filter(village_id=int(villageid))
-                        pesticide_data = Pesticide.objects.filter(crop_id=i.unique_id)
+                        # pesticide_data = Pesticide.objects.filter(crop_id=i.unique_id)
                     else:
                         crop_data = Cropdata.objects.filter(subdistrict_id=int(subdistrictid))
                 else:
@@ -683,7 +690,6 @@ def registeruser(request):
 
 
 
-
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def loginuser(request):
     if request.method == "POST":
@@ -699,7 +705,7 @@ def loginuser(request):
         else:
             print("Authentication failed")
             messages.error(request, "Please Enter the correct Credentials")
-
+               
     return render(request, 'login.html')
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -721,6 +727,14 @@ def logouturl(request):
 #     response['Expires'] = '0'
 #     return response
 
+@login_required(login_url="/login/")
+def queue(request):
+
+    #jsondata = Cropdatajson.objects.exclude(added=0)
+    jsondata = Cropdatajson.objects.order_by('added').distinct('added').exclude(added=0)
+
+    context = {'notupdated':jsondata}
+    return render(request,'quedjson.html',context)
      
 
 
