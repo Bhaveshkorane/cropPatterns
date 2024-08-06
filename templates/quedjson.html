@@ -1,9 +1,17 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
-<h2>Avaliable to update</h2>
-<table class="table">
+<div class="card-body">
+  {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endfor %}
+      </ul>
+  {% endif %}
+</div>
+<h2>Available for Extraction</h2>
+<table class="table table-bordered border-dark">
     <thead>
       <tr>
         <th scope="col">#</th>
@@ -14,12 +22,11 @@
     <tbody>
         {% for data in notupdated %}
       <tr>      
-        <th scope="row">{{forloop.counter}}</th>
-        <td>{{data.district}}</td>
-        <td><a href="/savejson/{{data.added}}/" class="btn btn-danger">Extract json</a></td>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{ data.district }}</td>
+        <td><a href="/savejson/{{ data.added }}/" class="btn btn-danger">Extract JSON</a></td>
       </tr>
       {% endfor %}
     </tbody>
-  </table>
-
+</table>
 {% endblock %}

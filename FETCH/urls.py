@@ -21,6 +21,7 @@ from .views import savejson
 from .views import showtables
 from .views import logouturl
 from .views import queue
+from .views import showdistricttables
 
 # For user registraion 
 from .views import registeruser
@@ -59,6 +60,7 @@ urlpatterns = [
     path('crop/',crops,name='crop_url'),
     path('savejson/<id>/',savejson,name='savejson_url'),
     path('showtables/',showtables,name='showtables_url'),
+    path('showdistricttable/<id>/',showdistricttables,name='showdistricttables_url'),
 
 
 

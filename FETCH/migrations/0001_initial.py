@@ -13,49 +13,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AgriculturalData',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('unique_id', models.CharField(max_length=100)),
-                ('village', models.CharField(max_length=100)),
-                ('state', models.CharField(max_length=100)),
-                ('district', models.CharField(max_length=100)),
-                ('area', models.FloatField()),
-                ('crop_type', models.CharField(max_length=100)),
-                ('area_cultivated', models.FloatField()),
-                ('yield_per_hectare', models.FloatField()),
-                ('soil_type', models.CharField(max_length=100)),
-                ('irrigation_method', models.CharField(max_length=100)),
-                ('temperature_average', models.FloatField()),
-                ('temperature_max', models.FloatField()),
-                ('temperature_min', models.FloatField()),
-                ('rainfall_total_mm', models.FloatField()),
-                ('rainfall_rainy_days', models.IntegerField()),
-                ('humidity_average_percentage', models.FloatField()),
-                ('fertilizer_type', models.CharField(max_length=100)),
-                ('fertilizer_quantity_kg', models.FloatField()),
-                ('pesticide_type', models.CharField(max_length=100)),
-                ('pesticide_quantity_l', models.FloatField()),
-            ],
-        ),
-        migrations.CreateModel(
             name='Crop',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('cropname', models.CharField(max_length=200)),
             ],
         ),
-        migrations.CreateModel(
-            name='Cropdata',
-            fields=[
-                ('unique_id', models.CharField(max_length=100, primary_key=True, serialize=False)),
-                ('area_cultivated', models.IntegerField(blank=True, null=True)),
-                ('crop_type', models.CharField(blank=True, max_length=100, null=True)),
-                ('yeild_perhectare', models.IntegerField(blank=True, null=True)),
-                ('soil_type', models.CharField(blank=True, max_length=50, null=True)),
-                ('irrigation_method', models.CharField(blank=True, max_length=100, null=True)),
-            ],
-        ),
+        
         migrations.CreateModel(
             name='Cropdatajson',
             fields=[
@@ -95,19 +59,7 @@ class Migration(migrations.Migration):
                 ('district', models.ForeignKey(blank=True, default=1121, null=True, on_delete=django.db.models.deletion.CASCADE, to='FETCH.district')),
             ],
         ),
-        migrations.CreateModel(
-            name='Weather',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('temp_min', models.IntegerField(blank=True, null=True)),
-                ('temp_max', models.IntegerField(blank=True, null=True)),
-                ('temp_avg', models.IntegerField(blank=True, null=True)),
-                ('rainfall_total', models.IntegerField(blank=True, null=True)),
-                ('rainfall_rainy_days', models.IntegerField(blank=True, null=True)),
-                ('humidity', models.IntegerField(blank=True, null=True)),
-                ('crop', models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='FETCH.cropdata')),
-            ],
-        ),
+       
         migrations.CreateModel(
             name='Village',
             fields=[
@@ -121,32 +73,12 @@ class Migration(migrations.Migration):
                 ('subdistrict', models.ForeignKey(blank=True, default=12342, null=True, on_delete=django.db.models.deletion.CASCADE, to='FETCH.subdistrict')),
             ],
         ),
-        migrations.CreateModel(
-            name='Pesticide',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('pesticide_type', models.CharField(blank=True, max_length=100, null=True)),
-                ('quantity_l', models.IntegerField(blank=True, null=True)),
-                ('crop', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='FETCH.cropdata')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='fertilizer',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fertilizer_type', models.CharField(blank=True, max_length=100, null=True)),
-                ('quantity_kg', models.IntegerField()),
-                ('crop', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='FETCH.cropdata')),
-            ],
-        ),
+        
+        
         migrations.AddField(
             model_name='district',
             name='state',
             field=models.ForeignKey(blank=True, default=0, null=True, on_delete=django.db.models.deletion.CASCADE, to='FETCH.state'),
         ),
-        migrations.AddField(
-            model_name='cropdata',
-            name='village',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='FETCH.village'),
-        ),
+       
     ]

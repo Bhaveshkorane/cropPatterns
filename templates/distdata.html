@@ -8,24 +8,23 @@
     {% endfor %}
 </ul>   
 {% endif %}
-
+<h1>State:{{state}}</h1>
+<h2>District:{{district}}</h2>
 
 <table class="table">
     <thead>
       <tr>
         <th scope="col">sr. no</th>
-        <th scope="col">State</th>
-        <th scope="col">District</th>
-        <th scope="col">Action</th>
+        <th scope="col">crop</th>
+        <th scope="col">Total area under cultivation(ha)</th>
       </tr>
     </thead>
     <tbody>
         {% for i in data %}
       <tr>
         <th scope="row">{{forloop.counter}}</th>
-        <td>{{i.state}}</td>
-        <td>{{i.district}}</td>
-        <td><a href="/showdistricttable/{{i.district}}/" class="btn btn-danger">View</a></td>
+        <td>{{i.crop}}</td>
+        <td>{{i.area_cultivated}}</td>
       </tr>
         {% endfor %}
     </tbody>

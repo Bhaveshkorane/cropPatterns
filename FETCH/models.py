@@ -22,10 +22,10 @@ class Subdistrict(models.Model):
     subdistrictcode = models.IntegerField(primary_key=True,default=2)
     englishname = models.CharField(max_length=200,null=True,blank=True)
     localname = models.CharField(max_length=200,null=True,blank=True)
-    district = models.ForeignKey(District,on_delete=models.CASCADE,default=1121,blank=True,null=True)           #how to create the foreign key for the data
+    district = models.ForeignKey(District,on_delete=models.CASCADE,default=1121,blank=True,null=True)          
     subdistrictcreated = models.DateTimeField(auto_now_add=True,blank=True,null=True)
     subdistrictupdated = models.DateTimeField(auto_now=True,blank=True,null=True)
-    state = models.IntegerField(null=True,blank=True,default=0)                                                  #added data though the querry
+    state = models.IntegerField(null=True,blank=True,default=0)                                                 
 
 from django.db import models
 
@@ -33,7 +33,7 @@ class Village(models.Model):
     villagecode = models.IntegerField(primary_key=True, default=3)
     englishname = models.CharField(max_length=200, null=True, blank=True)
     localname = models.CharField(max_length=200, null=True, blank=True)
-    subdistrict = models.ForeignKey('Subdistrict', on_delete=models.CASCADE, default=12342, blank=True, null=True)                 
+    subdistrict = models.ForeignKey(Subdistrict, on_delete=models.CASCADE, default=12342, blank=True, null=True)                 
     villagecreated = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     villageupdated = models.DateTimeField(auto_now=True, blank=True, null=True)
     state = models.ForeignKey('State', null=True, blank=True, default=None, on_delete=models.CASCADE)
@@ -43,18 +43,6 @@ class Village(models.Model):
 
 class Crop(models.Model):
     cropname = models.CharField(max_length=200) 
-    # season = models.CharField(max_length=100, null=True, blank=True)  
-    # area = models.IntegerField(null=True, blank=True)
-    # marketprice = models.IntegerField(null=True, blank=True)
-    # fertilizer = models.IntegerField(null=True, blank=True)
-    # village = models.ForeignKey(Village, on_delete=models.CASCADE, null=True, blank=True)  
-    # subdistrict = models.ForeignKey(Subdistrict, on_delete=models.CASCADE, null=True, blank=True)  
-    # district = models.ForeignKey(District, on_delete=models.CASCADE, null=True, blank=True)  
-    # state = models.ForeignKey(State, on_delete=models.CASCADE, null=True, blank=True) 
-    
-
-
-
 
 class Cropdatajson(models.Model):
     cropdata = models.JSONField(null=True,blank=True,default=None)
@@ -62,31 +50,10 @@ class Cropdatajson(models.Model):
     district = models.CharField(null=True,blank=True,default=None)
 
 
-class AgriculturalData(models.Model):
-    unique_id = models.CharField(max_length=100)
-    village = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    district = models.CharField(max_length=100)
-    area = models.FloatField()
-    crop_type = models.CharField(max_length=100)
-    area_cultivated = models.FloatField()
-    yield_per_hectare = models.FloatField()
-    soil_type = models.CharField(max_length=100)
-    irrigation_method = models.CharField(max_length=100)
-    temperature_average = models.FloatField()
-    temperature_max = models.FloatField()
-    temperature_min = models.FloatField()
-    rainfall_total_mm = models.FloatField()
-    rainfall_rainy_days = models.IntegerField()
-    humidity_average_percentage = models.FloatField()
-    fertilizer_type = models.CharField(max_length=100)
-    fertilizer_quantity_kg = models.FloatField()
-    pesticide_type = models.CharField(max_length=100)
-    pesticide_quantity_l = models.FloatField()
-    maxfile  =  models.IntegerField(blank=True,null=True)
 
-
-class Cropdata(models.Model):
+class Cropdetails(models.Model):
+    
+    # Crop details 
     unique_id = models.CharField(max_length=100,primary_key=True)
     area_cultivated = models.IntegerField(null=True,blank=True)
     crop_type = models.CharField(max_length=100,null=True,blank=True)
@@ -98,25 +65,34 @@ class Cropdata(models.Model):
     district = models.ForeignKey(District,on_delete=models.CASCADE,null=True,blank=True,default=480)
     subdistrict = models.ForeignKey(Subdistrict,on_delete=models.CASCADE,null=True,blank=True,default=3648)
 
-class Weather(models.Model):
+    # Weather data 
     temp_min = models.IntegerField(null=True,blank=True)
     temp_max = models.IntegerField(null=True,blank=True)
     temp_avg = models.IntegerField(null=True,blank=True)
     rainfall_total = models.IntegerField(null=True,blank=True)
     rainfall_rainy_days = models.IntegerField(null=True,blank=True)
     humidity = models.IntegerField(null=True,blank=True)
-    crop = models.ForeignKey(Cropdata, on_delete=models.CASCADE,default=None, to_field='unique_id')
+
+    # Fertilizers 
+    fertilizer_NPK_kg = models.IntegerField(null=True,blank=True)
+    fertilizer_COMPOST_kg = models.IntegerField(null=True,blank=True)
 
 
-class Pesticide(models.Model):
+    # Pesticides 
     pesticide_type = models.CharField(max_length=100,null=True,blank=True)
-    quantity_l = models.IntegerField(null=True,blank=True)
-    crop = models.ForeignKey(Cropdata, on_delete=models.CASCADE, null=True, blank=True)
+    pesticide_quantity_l = models.IntegerField(null=True,blank=True)  
 
-class fertilizer(models.Model):
-    fertilizer_type = models.CharField(max_length=100,null=True,blank=True)
-    quantity_kg = models.IntegerField()
-    crop = models.ForeignKey(Cropdata, on_delete=models.CASCADE, null=True, blank=True)
+
+
+class Aggridata(models.Model):
+    state = models.CharField(max_length=200,  null=True, blank=True)
+    district = models.CharField(max_length=200, null=True, blank=True)
+    crop = models.CharField(max_length=100,null=True,blank=True)
+    area_cultivated = models.IntegerField(null=True,blank=True)
+
+
+
+
 
 
 
