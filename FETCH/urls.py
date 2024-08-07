@@ -23,6 +23,7 @@ from .views import logouturl
 from .views import queue
 from .views import showdistricttables
 
+
 # For user registraion 
 from .views import registeruser
 from .views import loginuser

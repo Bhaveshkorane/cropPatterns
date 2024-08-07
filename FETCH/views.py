@@ -196,10 +196,6 @@ class VillageGeneric(APIView):
     def get(self, request):
         village_obj = Village.objects.filter(subdistrict_id=461)
         print(type(village_obj))
-
-        for i in village_obj:
-            print("hello")
-            break
         serializer = VillageSerializer(village_obj, many=True)
         print(type(serializer.data))
         return Response({"status": 200, "payload": serializer.data})
@@ -522,6 +518,8 @@ def registeruser(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def loginuser(request):
+    if request.user.is_authenticated:
+        return redirect("/state/")
     if request.method == "POST":
         uname = request.POST.get('uname')
         password = request.POST.get('Password')
@@ -564,6 +562,8 @@ def showdistricttables(request,id):
         print(dt,"------------------------------------------------------------------")
 
     return render(request,'distdata.html',context={"data":data,"state":state_names[0],"district":id})
+
+
      
 
 

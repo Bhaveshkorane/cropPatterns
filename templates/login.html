@@ -3,10 +3,13 @@
 {% block content %}
 <div class="container mt-5">
     <div class="card shadow">
+        <div class="card-header bg-info text-white text-center">
+            <h2 class="mb-0 " >Login</h2>
+        </div>
         <div class="card-body">
             <div>
                 {% if messages %}
-                    <ul class="messages">
+                    <ul class="messages bg-danger">
                         {% for message in messages %}
                         <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                         {% endfor %}
