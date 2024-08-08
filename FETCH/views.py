@@ -589,3 +589,6 @@ def showdistricttables(request,id):
 def testingcode(request):
     return HttpResponse("Hello are you done ????")
 
+
+# this is async 
+
