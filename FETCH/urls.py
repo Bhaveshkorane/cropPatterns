@@ -22,6 +22,7 @@ from .views import showtables
 from .views import logouturl
 from .views import queue
 from .views import showdistricttables
+from .views import testingcode
 
 
 # For user registraion 
@@ -46,7 +47,6 @@ urlpatterns = [
 
     
     # For fetching data from the database through api 
-
     path('generic-village/',VillageGeneric.as_view()),
     path('generic-state/',StateGeneric.as_view()),
     path('generic-distirct/',DistrictGeneric.as_view()),
@@ -71,11 +71,9 @@ urlpatterns = [
     path('logout/',logouturl,name='logout_url'),
 
 
-    path('queue/',queue,name='queue_url')
+    path('queue/',queue,name='queue_url'),
 
-
-
-
+    path('test/',testingcode,name="testing_url")
      
 ]
 

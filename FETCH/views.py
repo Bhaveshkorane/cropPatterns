@@ -212,13 +212,13 @@ class StateGeneric(APIView):
 @login_required(login_url="/login/")
 def state(request):
     st = State.objects.all()
-    cp=Crop.objects.all()
+    cp=Crop.objects.all().order_by('cropname')
     context = {'states': st,'crops':cp}
     return render(request, 'states.html', context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def crops(request):
-    cp=Crop.objects.all()
+    cp=Crop.objects.all().order_by('cropname')
     context = {'crops':cp}
     return render(request,'state.html',context)
 
@@ -250,11 +250,19 @@ class generatedata(APIView):
 
         unique_id = uuid.uuid4()
         data = request.data
+        # params = request.query_params  
         village = data['village']
-        village_code = data['village_code']
+        # village = params['village']
+        
+
+       
+        # village_code =  params['village_code']
+        village_code =  data['village_code']
 
         print("Generted data for --->",village_code)
-        crop = data['crop']
+        # crop =  params['crop']
+        crop =  data['crop']
+
         area = random.randint(1,39)
 
         soils=['clay', 'sandy', 'silty', 'peaty', 'chalky', 'loamy']
@@ -314,15 +322,26 @@ class generatedata(APIView):
         return Response({"status:":200,"payload":data})
 
 
+import time
 
 class GenerateDataView(View):
     def post(self, request):
+        start_time = time.time() #for testing 
+
+        state = State.objects.get(statecode=request.POST.get('state')).englishname #for testing 
+
+
         district = request.POST.get('district')
-        crop = request.POST.get('crop')
+        
+        crop = request.POST.get('crop') 
+
+        #Bhavesh dont forget to remove after testing 
+        if crop != "All":
+            cp_name = Crop.objects.get(id=crop).cropname
+        else:
+            cp_name = crop
      
         district_name = District.objects.get(districtcode=district).englishname
-
-
         subdistricts = Subdistrict.objects.filter(district_id=district)
         for subd in subdistricts:
             villages = Village.objects.filter(subdistrict_id=subd.subdistrictcode)
@@ -359,8 +378,11 @@ class GenerateDataView(View):
                     district = district 
                     dt = Cropdatajson(cropdata=data,added=district,district=district_name)
                     dt.save()
+        end_time = time.time()
+
+        total_time=end_time-start_time;
                     
-        messages.success(request, "Data generated and json saved in the database ")
+        messages.success(request, f"Data generated and json saved in the database and the total time taken = {total_time} to add ---{cp_name}---crop in state = {state} district = {district_name}")
 
         # return redirect('/state/')
         return redirect('/queue/')
@@ -555,7 +577,7 @@ def showdistricttables(request,id):
     print(id)
     data = Aggridata.objects.filter(district=id)
     # state_name = Aggridata.objects.get(district=id).distinct('state').state
-    state_names = Aggridata.objects.filter(district=id).values_list('state', flat=True).distinct()
+    state_names = Aggridata.objects.filter(district=id).values_list('state', flat=True).distinct().order_by('district')
 
 
     for dt in data:
@@ -564,10 +586,6 @@ def showdistricttables(request,id):
     return render(request,'distdata.html',context={"data":data,"state":state_names[0],"district":id})
 
 
-     
-
-
-
-
-
+def testingcode(request):
+    return HttpResponse("Hello are you done ????")
 

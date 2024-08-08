@@ -154,3 +154,5 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+# settings.py
+DATA_GENERATOR_API = 'http://127.0.0.1:8000/gene/'
