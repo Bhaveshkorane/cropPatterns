@@ -216,8 +216,10 @@ class StateGeneric(APIView):
 def state(request):
     states = State.objects.all()
     crops =Crop.objects.all().order_by('cropname')
-    jsondata = Cropdatajson.objects.order_by('added').distinct('added').exclude(added=0)
-    context = {'states': states,'crops':crops,'notupdated':jsondata}
+    jsondata = Cropdatajson.objects.order_by('process_id').distinct('process_id').exclude(added=0)
+    data = Aggridata.objects.distinct('district')
+    
+    context = {'states': states,'crops':crops,'notupdated':jsondata,"data":data}
     return render(request, 'states.html', context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
