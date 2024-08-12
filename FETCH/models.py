@@ -44,11 +44,14 @@ class Village(models.Model):
 class Crop(models.Model):
     cropname = models.CharField(max_length=200) 
 
-class Cropdatajson(models.Model):
-    cropdata = models.JSONField(null=True,blank=True,default=None)
-    added = models.IntegerField(null=True,blank=True,default=0)
-    district = models.CharField(null=True,blank=True,default=None)
 
+class Cropdatajson(models.Model):
+    cropdata = models.JSONField(null=True, blank=True, default=None)
+    added = models.IntegerField(null=True, blank=True, default=0)
+    district = models.CharField(null=True, blank=True, default=None)
+    process_id = models.CharField(null=True, blank=True)
+    added_time = models.CharField(null=True, blank=True)
+    crop_type = models.CharField(null=True, blank=True)
 
 
 class Cropdetails(models.Model):

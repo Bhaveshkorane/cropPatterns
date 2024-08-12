@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,7 +56,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # For Auto logout the session 
+    'django_auto_logout.middleware.auto_logout',
+
 ]
+
+
 
 ROOT_URLCONF = 'cropPatterns.urls'
 
@@ -70,25 +77,15 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                # For auto logout 
+                'django_auto_logout.context_processors.auto_logout_client',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'cropPatterns.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-
-# Default database
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 # My databse 
 DATABASES = {
@@ -156,3 +153,53 @@ AUTHENTICATION_BACKENDS = [
 
 # settings.py
 DATA_GENERATOR_API = 'http://127.0.0.1:8000/gene/'
+
+
+
+# For auto logout 
+AUTO_LOGOUT = {'IDLE_TIME': 1200,
+               'REDIRECT_TO_LOGIN_IMMEDIATELY': True,
+               'MESSAGE': 'The session has expired. Please login again to continue.',
+               }
+
+
+# for logging 
+{
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "django.server": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] {message}",
+            "style": "{",
+        }
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "filters": ["require_debug_true"],
+            "class": "logging.StreamHandler",
+        },
+        "django.server": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "django.server",
+        },
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "mail_admins"],
+            "level": "INFO",
+        },
+        "django.server": {
+            "handlers": ["django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

@@ -14,7 +14,7 @@
 
     <div class="card mt-4">
         <div class="card-header bg-info">
-            <h2>Available for Extraction</h2>
+            <h2>History</h2>
         </div>
         <div class="card-body">
             <table class="table table-bordered table-hover">
@@ -24,17 +24,15 @@
                         <th scope="col">District</th>
                         <th scope="col">crop </th>
                         <th scope="col">Added time </th>
-                        <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for data in notupdated %}
+                    {% for data in history %}
                     <tr>
                         <th scope="row">{{ forloop.counter }}</th>
                         <td>{{ data.district }}</td>
-                        <td>{{ data.crop_type }}</td>
+                        <td>{{ data.crop_type}}</td>
                         <td>{{ data.added_time }}</td>
-                        <td><a href="/savejson/{{ data.process_id }}/" class="btn btn-primary">Extract JSON</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

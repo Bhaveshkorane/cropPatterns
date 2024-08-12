@@ -1,4 +1,5 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render
+from django.shortcuts import redirect
 from django.shortcuts import HttpResponse
 import requests
 from rest_framework.response import Response 
@@ -14,7 +15,6 @@ from .models import Cropdetails
 from .models import Aggridata   
 
 
-
 # uuid for generting the unique id 
 import uuid 
 
@@ -25,8 +25,6 @@ from .serializers import DistrictSerializer
 
 from django.views import View
 
-
-
 # For messages 
 from django.contrib import messages
 
@@ -36,21 +34,34 @@ from decouple import config
 
 # For user creation and login
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from django.contrib.auth import login
-from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 
 # Aggrigation functions
-from django.db.models import Avg, Count, Min, Sum
+from django.db.models import Sum
+
+# For time stamp
+import time
+from datetime import datetime
+
+
+# For downloading the pdf file 
+from django.http import FileResponse
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+
+# from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+
+import random
 
 
 def createstate(request):
     count=0
     stateData = requests.post(config('state_api')).json()
     for i in stateData:
-        #print(i)     # For checking 
         state_code=i['stateCode']
         english_name=i['stateNameEnglish']
         local_name=i['stateNameLocal']
@@ -62,7 +73,6 @@ def createstate(request):
         data.save()
         count += 1
 
-    print(f"data is saved successfully and added {count} states ")
     return HttpResponse(f"hello bhavesh you have added {count} states into the database")
 
 # Inserting data into district table
@@ -73,7 +83,6 @@ def createdistrict(request):
     for i in state_data:
         id_=i.statecode
 
-        #print(id_)      #for checking 
 
         # Fetching the data from API
         # query='https://lgdirectory.gov.in/webservices/lgdws/districtList?stateCode='+str(id_)
@@ -129,7 +138,6 @@ def createsubdistrict(request):
             subdistrict_data = response.json()
     
             for subd in subdistrict_data:
-                print(subd)
                 sdcount += 1
                 subdistrict_code = subd['subdistrictCode']
                 if Subdistrict.objects.filter(subdistrictcode=subdistrict_code).exists():
@@ -162,7 +170,6 @@ def createvillage(request):
 
 
         for village in village_data:
-            print(village)
             vcount += 1
             village_code=village['villageCode']
             if Village.objects.filter(villagecode =  village_code).exists():
@@ -181,13 +188,11 @@ def createvillage(request):
     return HttpResponse(f"Total {vcount} number of villages are added into the table")
 
 
-# from rest_framework.decorators import api_view
-from rest_framework.views import APIView
+
 
 class DistrictGeneric(APIView):
     def get(self,request):
         id_=request.GET.get('id')
-        print(id_)
         district_obj = District.objects.filter(state_id=id_)
         serializer = District(district_obj,many=True)
         return Response({"status:":200,"payload":serializer.data})
@@ -195,9 +200,7 @@ class DistrictGeneric(APIView):
 class VillageGeneric(APIView):
     def get(self, request):
         village_obj = Village.objects.filter(subdistrict_id=461)
-        print(type(village_obj))
         serializer = VillageSerializer(village_obj, many=True)
-        print(type(serializer.data))
         return Response({"status": 200, "payload": serializer.data})
 
 class StateGeneric(APIView):
@@ -211,9 +214,10 @@ class StateGeneric(APIView):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login/")
 def state(request):
-    st = State.objects.all()
-    cp=Crop.objects.all().order_by('cropname')
-    context = {'states': st,'crops':cp}
+    states = State.objects.all()
+    crops =Crop.objects.all().order_by('cropname')
+    jsondata = Cropdatajson.objects.order_by('added').distinct('added').exclude(added=0)
+    context = {'states': states,'crops':crops,'notupdated':jsondata}
     return render(request, 'states.html', context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -242,92 +246,13 @@ def village(request):
 
 
 # Api for generating random data 
-import random
-
-
-class generatedata(APIView):
-    def get(self,request):
-
-        unique_id = uuid.uuid4()
-        data = request.data
-        # params = request.query_params  
-        village = data['village']
-        # village = params['village']
-        
-
-       
-        # village_code =  params['village_code']
-        village_code =  data['village_code']
-
-        print("Generted data for --->",village_code)
-        # crop =  params['crop']
-        crop =  data['crop']
-
-        area = random.randint(1,39)
-
-        soils=['clay', 'sandy', 'silty', 'peaty', 'chalky', 'loamy']
-        soil_index=random.randint(0,5)
-        soil=soils[soil_index]
-
-        irrigatoins=['flooding','sprinkler','drip']
-        irr_index=random.randint(0,2)
-        irrigatoin=irrigatoins[irr_index]
-
-        data = {
-                    'uniqueid': unique_id,
-                    'village': village,  # users input from form
-                    'village_code': village_code,
-                    "agricultural_data": {
-                        "area": area,
-                        "crop_type": crop,  # users input from form
-                        "area_cultivated": random.randint(1, 500),
-                        "yeild_perhectare": random.randint(5, 15),
-                        "soil_type": soil,
-                        "irrigation_method": irrigatoin,
-                        "weather_data": {
-                            "temprature": {
-                                "average": random.randint(1, 50),
-                                "max": random.randint(1, 50),
-                                "min": random.randint(1, 50)
-                            },
-                            "Rain_fall": {
-                                "total_mm": random.randint(1000, 3500),
-                                "rainy_days": random.randint(1000, 3000)
-                            },
-                            "humidity": {
-                                "average_percentage": random.randint(1, 100)
-                            }
-                        },
-                        "pesticide_and_fertilizer_usage": {
-                            "fertilizers": [
-                                {
-                                    "type": "NPK",
-                                    "quantity_kg": random.randint(500, 1000)
-                                },
-                                {
-                                    "type": "Compost",
-                                    "quantity_kg": random.randint(600, 2000)
-                                }
-                            ],
-                            "pesticides": [
-                                {
-                                    "type": "Fungicide",
-                                    "quantity_l": random.randint(40, 200)
-                                }
-                            ]
-                        }
-                    }
-                }
-
-        return Response({"status:":200,"payload":data})
-
-
-import time
 
 class GenerateDataView(View):
     def post(self, request):
         start_time = time.time() #for testing 
-
+        process_id = uuid.uuid4()
+        added_time = str(datetime.now())
+        print(added_time,"-----------------------------------------------____>")
         state = State.objects.get(statecode=request.POST.get('state')).englishname #for testing 
 
 
@@ -338,8 +263,10 @@ class GenerateDataView(View):
         #Bhavesh dont forget to remove after testing 
         if crop != "All":
             cp_name = Crop.objects.get(id=crop).cropname
+            
         else:
             cp_name = crop
+          
      
         district_name = District.objects.get(districtcode=district).englishname
         subdistricts = Subdistrict.objects.filter(district_id=district)
@@ -354,19 +281,27 @@ class GenerateDataView(View):
                     crop_names = Crop.objects.values_list('cropname', flat=True)
                     for cp in crop_names:
                         api_url = config('data_generator_api')
-                        print("crop:--------->",cp)
+
+                        
 
                         api_response = requests.get(api_url, data={'village': village_name, 'crop':cp,'village_code':village_code})
                         # Check if the request was successful
                         if api_response.status_code == 200:
                             data = api_response.json().get('payload')
+                            
                         else:
                             data = None
                         district = district 
-                        dt = Cropdatajson(cropdata=data,added=district,district=district_name)
+                        dt = Cropdatajson(cropdata=data,
+                                          added=district,
+                                          district=district_name,
+                                          process_id=process_id,
+                                          added_time=added_time,
+                                          crop_type=crop
+                                          )
+
                         dt.save()       
                 else:
-                    print("Crop_-------------___+>>>>",crop)
                     crop_name = Crop.objects.get(id=crop).cropname
                     api_url = config('data_generator_api')
                     api_response = requests.get(api_url, data={'village': village_name, 'crop':crop_name,'village_code':village_code})
@@ -376,20 +311,26 @@ class GenerateDataView(View):
                     else:
                         data = None
                     district = district 
-                    dt = Cropdatajson(cropdata=data,added=district,district=district_name)
+                    dt = Cropdatajson(cropdata=data,
+                                      added=district,
+                                      district=district_name,
+                                      process_id=process_id,
+                                      added_time=added_time,
+                                      crop_type=crop_name
+                                      )
                     dt.save()
         end_time = time.time()
 
         total_time=end_time-start_time;
                     
-        messages.success(request, f"Data generated and json saved in the database and the total time taken = {total_time} to add ---{cp_name}---crop in state = {state} district = {district_name}")
+        messages.success(request, f"Data generated and json saved in the database and the total time taken = {total_time} to add cp_name crop in state = {state} district = {district_name}")
 
-        # return redirect('/state/')
         return redirect('/queue/')
-        
+
+    
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def savejson(request,id):
-    jsondata = Cropdatajson.objects.filter(added=id).values()
+    jsondata = Cropdatajson.objects.filter(process_id=id).values()
 
     for data in jsondata:
         # For storing the corp data
@@ -401,7 +342,6 @@ def savejson(request,id):
         irrigation_method = data['cropdata']['agricultural_data']['irrigation_method']
         village = int(data['cropdata']['village_code'])
 
-        print("------------------village code =",village)
 
 
         # Resloving Foreign keys 
@@ -465,10 +405,10 @@ def savejson(request,id):
         # Adding data into Cropdetails                       
         savecrop.save()
 
-    messages.success(request,"Data stored successfully into the respecive tables ")  
+    messages.success(request,"Crop Details saved successfully ")  
 
     # Updtating the state added
-    jsondata = Cropdatajson.objects.filter(added=id).update(added=0)  
+    jsondata = Cropdatajson.objects.filter(process_id=id).update(added=0)  
 
     # Call to function for aggrigating the data
     aggirgatedata()
@@ -490,105 +430,47 @@ def aggirgatedata():
             crop=data['crop_type'],
             defaults={'area_cultivated': data['total_area']}
         )
-    
-
-    print("aggrigation saved successfully ---------------------------------------------------->")
-    
-
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="/login/")
-def showtables(request):
+def viewdata(request):
     data = Aggridata.objects.distinct('district')
 
     context = {"data":data}
     return render(request, 'data.html', context)
     
-        
-        
 
-
-def registeruser(request):
-    context = {'uname': "", 'email': "", 'pass1': "", 'pass2': "", 'fname': "", 'lname': ""}
-
-    if request.method == "POST":
-        uname = request.POST.get('uname')
-        fname = request.POST.get('fname')
-        lname = request.POST.get('lname')
-        email = request.POST.get('uemail')
-        pass1 = request.POST.get('Password1')
-        pass2 = request.POST.get('Password2')
-
-        if pass1 == pass2:
-            if not User.objects.filter(username=uname).exists():
-                if not User.objects.filter(email=email).exists():
-                    user = User.objects.create_user(username=uname, email=email, password=pass1, first_name=fname, last_name=lname)
-                    user.save()
-                    messages.success(request, "User created successfully")
-                    return redirect('/login/')
-                else:
-                    messages.error(request, "Email Already Exists")
-            else:
-                messages.error(request, "Username already exists")
-        else:
-            messages.error(request, "Passwords do not match")
-        context = {'uname': uname, 'email': email, 'pass1': pass1, 'pass2': pass2, 'fname': fname, 'lname': lname}
-    return render(request, 'registration.html', context)
-
-
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def loginuser(request):
-    if request.user.is_authenticated:
-        return redirect("/state/")
-    if request.method == "POST":
-        uname = request.POST.get('uname')
-        password = request.POST.get('Password')
-
-        user = authenticate(request,username=uname, password=password)
-
-        if user is not None:
-            login(request, user)
-            print("Authenticated user: ", user)
-            return redirect('/state/')
-        else:
-            print("Authentication failed")
-            messages.error(request, "Please Enter the correct Credentials")
-               
-    return render(request, 'login.html')
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def logouturl(request):
-    logout(request)
-    return redirect('/login/')
+# Queue avaliable for extraction 
 
 @login_required(login_url="/login/")
 def queue(request):
-
-    #jsondata = Cropdatajson.objects.exclude(added=0)
-    jsondata = Cropdatajson.objects.order_by('added').distinct('added').exclude(added=0)
-
-    context = {'notupdated':jsondata}
+    jsondata = Cropdatajson.objects.order_by('process_id').distinct('process_id').exclude(added=0)
+    context = {'notupdated':jsondata,}
     return render(request,'quedjson.html',context)
 
 @login_required(login_url="/login/")
 def showdistricttables(request,id):
-    print(id)
     data = Aggridata.objects.filter(district=id)
     # state_name = Aggridata.objects.get(district=id).distinct('state').state
     state_names = Aggridata.objects.filter(district=id).values_list('state', flat=True).distinct().order_by('district')
 
 
-    for dt in data:
-        print(dt,"------------------------------------------------------------------")
 
     return render(request,'distdata.html',context={"data":data,"state":state_names[0],"district":id})
 
 
-def testingcode(request):
-    return HttpResponse("Hello are you done ????")
+@login_required(login_url="/login/")
+def showhistory(request):
+    jsondata = Cropdatajson.objects.order_by('process_id').distinct('process_id')
+    context = {'history':jsondata}
+    return render(request,'history.html',context)
 
-
-# this is async 
+# Downloading the pdf 
+def gen_pdf(request):
+    # Creating a bytestream buffer 
+    buf = io.BytesIO()
+    # Create canvas 
+    canvas = canvas.Canvas(buf,pagesize=letter,bottomup=0)
+    return HttpResponse("Hello Bhavesh")
 

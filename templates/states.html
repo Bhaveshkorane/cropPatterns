@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-2">
     <div class="card-body">
         {% if messages %}
             <ul class="messages">
@@ -12,7 +12,7 @@
         {% endif %}
     </div>
     <div class="card shadow">
-        <div class="card-header bg-info text-white text-center">
+        <div class="card-header bg-info text-white text-center" id="heading">
             <h2 class="mb-0 " >Select Region and Crop</h2>
         </div>
         <div class="card-body">
@@ -56,10 +56,73 @@
                     <input type="submit" class="btn btn-success" value="Generate Data" >
                 </div>
             </form>
+            
         </div>
+    </div>
+    <div class="card-body bg-info mt-5">
+        <div class="row">
+            <div class="col-md-4 mb-3 mt-5">
+                <div class="card ">
+                    <div class="card-body">
+                        <h3 class="card-title bg-info text-center">In Progress</h3>
+                        
+                        <div class="mb-3 d-flex justify-content-center">
+                            <a href="{% url 'queue_url' %}" class="btn btn-primary">Extract JSON</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-4 mb-3 mt-5">
+                <div class="card ">
+                    <div class="card-body">
+                        <h3 class="card-title bg-info text-center">Extraction Queue</h3>
+                        
+                        <div class="mb-3 d-flex justify-content-center">
+                            <a href="{% url 'queue_url' %}" class="btn btn-primary">Extract JSON</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-4 mb-3 mt-5">
+                <div class="card ">
+                    <div class="card-body">
+                        <h3 class="card-title bg-info text-center">Avalible for view</h3>
+                        <table class="table">
+                            <thead>
+                              <tr>
+                                <th scope="col">Data not updated yet</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {% for i in notupdated %}
+                              <tr>
+                                <th scope="row">1</th>
+                                <td>{{ i.district }}</td>
+                              </tr>
+                            {% endfor %}
+                            </tbody>
+                          </table>
+                        <div class="mb-3 d-flex justify-content-center">
+                            <a href="{% url 'viewdata_url' %}" class="btn btn-primary">View</a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
     </div>
 </div>
 
+<style>
+    #heading{
+        background-color: hsl(196, 86%, 11%);
+    }
+</style>
 <script>
     function disable(x)
         {
@@ -84,4 +147,5 @@
         return true;
     }
 </script>
+{{ redirect_to_login_immediately }}
 {% endblock %}
