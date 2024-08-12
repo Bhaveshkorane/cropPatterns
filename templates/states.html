@@ -67,7 +67,7 @@
                     <div class="card-header bg-secondary text-white text-center">
                         <h3 class="mb-0">In Progress</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body scrollable-card">
                         <div class="mb-3 d-flex justify-content-center">
                             <a href="{% url 'queue_url' %}" class="btn btn-secondary">Extract JSON</a>
                         </div>
@@ -80,18 +80,21 @@
                     <div class="card-header bg-secondary text-white text-center">
                         <h3 class="mb-0">Extraction Queue</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body scrollable-card">
                         <table class="table">
                             <thead>
                               <tr>
-                                <th scope="col">Data not updated yet</th>
+                                <th scope="col">sr no</th>
+                                <th scope="col">District</th>
+                                <th scope="col">crop </th>
                               </tr>
                             </thead>
                             <tbody>
                             {% for i in notupdated %}
                               <tr>
-                                <th scope="row">1</th>
+                                <th scope="row">{{ forloop.counter }}</th>
                                 <td>{{ i.district }}</td>
+                                <td>{{ i.crop_type }}</td>
                               </tr>
                             {% endfor %}
                             </tbody>
@@ -109,7 +112,7 @@
                     <div class="card-header bg-secondary text-white text-center">
                         <h3 class="mb-0">Available for View</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body scrollable-card">
                         <table class="table table-striped table-hover">
                             <thead class="thead-dark">
                                 <tr>
@@ -164,6 +167,10 @@
     }
     .card-title {
         color: #FEFFFF !important;
+    }
+    .scrollable-card {
+        max-height: 300px; /* Set a fixed height */
+        overflow-y: auto; /* Enable vertical scrolling */
     }
 </style>
 
