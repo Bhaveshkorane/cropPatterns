@@ -9,7 +9,7 @@
         <div class="card-body">
             <div>
                 {% if messages %}
-                    <ul class="messages bg-info">
+                    <ul class="messages bg-danger   ">
                         {% for message in messages %}
                         <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                         {% endfor %}
@@ -61,11 +61,10 @@
         color: #FEFFFF !important;
     }
     .scrollable-card {
-        max-height: 300px; /* Set a fixed height */
-        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: 300px; 
+        overflow-y: auto; 
     }
     
-    /* New Styles */
     .form-label {
         font-weight: bold;
         font-size: 1.1rem;

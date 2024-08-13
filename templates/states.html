@@ -20,7 +20,7 @@
             <div class="mb-3 d-flex justify-content-end">
                 <a href="{% url 'queue_url' %}" class="btn btn-warning">Extract JSON</a>
             </div>
-            <form method="POST" action="{% url 'generate_data_view' %}" onsubmit="return validateForm()">
+            <form method="POST" action="{% url 'generate_data_view' %}" onsubmit="return handleFormSubmit()">
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -63,7 +63,7 @@
     <div class="card-body bg-light mt-5">
         <div class="row">
             <div class="col-md-4 mb-3 ">
-                <div class="card bg-info">
+                <div class="card bg-success">
                     <div class="card-header bg-secondary text-white text-center">
                         <h3 class="mb-0">In Progress</h3>
                     </div>
@@ -76,7 +76,7 @@
             </div>
 
             <div class="col-md-4 mb-3 ">
-                <div class="card bg-info">
+                <div class="card bg-success">
                     <div class="card-header bg-secondary text-white text-center">
                         <h3 class="mb-0">Extraction Queue</h3>
                     </div>
@@ -100,7 +100,6 @@
                             </tbody>
                           </table>
                         <div class="mb-3 d-flex justify-content-center">
-                                
                             <a href="{% url 'queue_url' %}" class="btn btn-secondary">Extract JSON</a>
                         </div>
                     </div>
@@ -108,8 +107,8 @@
             </div>
 
             <div class="col-md-4 mb-3 ">
-                <div class="card bg-info">
-                    <div class="card-header bg-secondary text-white text-center">
+                <div class="card bg-success">
+                    <div class="card-header text-white text-center">
                         <h3 class="mb-0">Available for View</h3>
                     </div>
                     <div class="card-body scrollable-card">
@@ -128,7 +127,8 @@
                                     <th scope="row">{{ forloop.counter }}</th>
                                     <td>{{ i.state }}</td>
                                     <td>{{ i.district }}</td>
-                                    <td><a href="/showdistricttable/{{ i.district }}/" class="btn btn-primary">View</a></td>
+                                    <td><a href="{% url 'viewdata_url' %}" class="btn btn-secondary view-btn">View</a></td>
+                                    
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -145,24 +145,24 @@
 
 <style>
     #heading {
-        background-color: #17252A !important;
+        background-color: #139939 !important;
     }
     .btn-warning {
         background-color: #ffc107;
         border-color: #ffc107;
     }
     .bg-light {
-        background-color: #3AAFA9 !important;
+        background-color: #75A47F !important;
     }
     .btn-secondary {
         background-color: #000000;
         border-color: #6c757d;
     }
     .card {
-        background-color:  #3AAFA9;
+        background-color:  #75A47F;
     }
     .card-header {
-        background-color: #17252A !important;
+        background-color: #139939 !important;
         color: #FEFFFF !important;
     }
     .card-title {
@@ -175,9 +175,16 @@
 </style>
 
 <script>
-    function disable(x) {
-        x.disabled = true;
+    function disableAllButtons() {
+        var buttons = document.querySelectorAll('button, input[type="submit"], input[type="button"]');
+        buttons.forEach(function(button) {
+            // Check if the button has the class 'view-btn'
+            if (!button.classList.contains('view-btn')) {
+                button.disabled = true;
+            }
+        });
     }
+
     function validateForm() {
         var stateSelect = document.getElementById("state-select");
         var cropSelect = document.getElementById("crop-select");
@@ -196,7 +203,17 @@
         }
         return true;
     }
+
+    function handleFormSubmit() {
+        if (validateForm()) {
+            disableAllButtons();
+            return true;
+        } else {
+            return false;
+        }
+    }
 </script>
+
 
 {{ redirect_to_login_immediately }}
 {% endblock %}

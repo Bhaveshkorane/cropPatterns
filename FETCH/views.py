@@ -325,7 +325,8 @@ class GenerateDataView(View):
 
         total_time=end_time-start_time;
                     
-        messages.success(request, f"Data generated and json saved in the database and the total time taken = {total_time} to add cp_name crop in state = {state} district = {district_name}")
+        # messages.success(request, f"Data generated and json saved in the database and the total time taken = {total_time} to add cp_name crop in state = {state} district = {district_name}")
+        messages.success(request, f"Json generated for crop {cp_name} in state = {state} district = {district_name}")
 
         return redirect('/queue/')
 
